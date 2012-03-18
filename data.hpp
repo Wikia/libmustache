@@ -43,13 +43,13 @@ class Data {
     
     //! The current string value
     Data::String * val;
-    
+
     //! The current map value
     Data::Map data;
-    
+
     //! The current array value (list)
     Data::List children;
-    
+
     //! The current array value (array)
     Data::Array array;
     

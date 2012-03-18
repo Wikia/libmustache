@@ -283,5 +283,18 @@ void Tokenizer::tokenize(std::string * tmpl, Node * root)
   }
 }
 
+//! Tokenizes the given template
+void Tokenizer::tokenize(Template & tmpl)
+{
+  // Check if it's not empty or already been tokenized
+  if( tmpl.str.length() <= 0 ) {
+    return;
+  } else if( tmpl.root != NULL ) {
+    return;
+  }
+  
+  
+}
+
 
 } // namespace Mustache

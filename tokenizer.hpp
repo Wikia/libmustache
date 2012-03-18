@@ -11,6 +11,7 @@
 
 #include "exception.hpp"
 #include "node.hpp"
+#include "template.hpp"
 #include "utils.hpp"
 
 namespace mustache {
@@ -64,6 +65,9 @@ class Tokenizer {
     
     //! Tokenizes the given string template
     void tokenize(std::string * tmpl, Node * root);
+    
+    //! Tokenizes the given template
+    void tokenize(Template & tmpl);
 };
 
 
