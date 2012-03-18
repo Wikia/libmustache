@@ -63,10 +63,8 @@ class Tokenizer {
     //! Gets whether to escape HTML by default
     bool getEscapeByDefault();
     
-    //! Tokenizes the given string template
-    void tokenize(std::string * tmpl, Node * root);
-    
     //! Tokenizes the given template
+    void tokenize(std::string * tmpl, Node * root);
     void tokenize(Template & tmpl);
 };
 

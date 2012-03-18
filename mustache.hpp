@@ -11,6 +11,7 @@
 #include "exception.hpp"
 #include "node.hpp"
 #include "renderer.hpp"
+#include "template.hpp"
 #include "tokenizer.hpp"
 #include "utils.hpp"
 
@@ -32,12 +33,6 @@ class Mustache {
     
     //! Renderer
     Renderer renderer;
-    
-    //! Utility method for Tokenizer::tokenize()
-    void tokenize(std::string * tmpl, Node * root);
-    
-    //! Utility method for Renderer::init() and Renderer::render()
-    void render(Node * node, Data * data, Node::Partials * partials, std::string * output);
     
     //! Utility method for Tokenizer::setStartSequence()
     void setStartSequence(const std::string& start) {
@@ -77,6 +72,20 @@ class Mustache {
     //! Utility method for Tokenizer::getEscapeByDefault()
     bool getEscapeByDefault() {
       return tokenizer.getEscapeByDefault();
+    };
+    
+    //! Utility method for Tokenizer::tokenize()
+    void tokenize(std::string * tmpl, Node * root) {
+      tokenizer.tokenize(tmpl, root);
+    };
+    void tokenize(Template & tmpl) {
+      tokenizer.tokenize(tmpl);
+    };
+    
+    //! Utility method for Renderer::init() and Renderer::render()
+    void render(Node * node, Data * data, Node::Partials * partials, std::string * output) {
+      renderer.init(node, data, partials, output);
+      renderer.render();
     };
 };
 

@@ -17,6 +17,7 @@ namespace mustache {
 class Template {
   public:
     //! Typedefs
+    typedef std::auto_ptr<Template> Ptr;
     typedef std::vector<std::string> Fragments;
     typedef std::vector<Node> Nodes;
     typedef std::map<std::string,Template> Partials;
@@ -52,6 +53,11 @@ class Template {
         fragments(defaultFragmentsSize), 
         nodes(defaultNodesSize), 
         root(NULL) {};
+    
+    //! Gets the template string
+    const std::string& getString() {
+      return str;
+    };
 };
 
 
