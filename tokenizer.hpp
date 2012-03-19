@@ -64,8 +64,7 @@ class Tokenizer {
     bool getEscapeByDefault();
     
     //! Tokenizes the given template
-    void tokenize(std::string * tmpl, Node * root);
-    void tokenize(Template & tmpl);
+    void tokenize(Template & tmplObj);
 };
 
 

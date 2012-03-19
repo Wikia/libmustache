@@ -9,6 +9,7 @@
 #include "data.hpp"
 #include "exception.hpp"
 #include "node.hpp"
+#include "template.hpp"
 #include "utils.hpp"
 
 namespace mustache {
@@ -22,7 +23,7 @@ namespace mustache {
 class Renderer {
   private:
     //! The root token node
-    Node * _node;
+    Template * _tmpl;
     
     //! The root data node
     Data * _data;
@@ -44,7 +45,7 @@ class Renderer {
     static const int outputBufferLength = 100000;
     
     //! Constructor
-    Renderer() : _node(NULL), _data(NULL), _stack(NULL), _partials(NULL), _output(NULL) {};
+    Renderer() : _tmpl(NULL), _data(NULL), _stack(NULL), _partials(NULL), _output(NULL) {};
     
     //! Destructor
     ~Renderer();
@@ -53,10 +54,10 @@ class Renderer {
     void clear();
     
     //! Initializes the renderer
-    void init(Node * node, Data * data, Node::Partials * partials, std::string * output);
+    void init(Template * tmpl, Data * data, Node::Partials * partials, std::string * output);
     
     //! Sets the current root token node
-    void setNode(Node * node);
+    void setTemplate(Template * tmpl);
     
     //! Sets the current root data node
     void setData(Data * data);

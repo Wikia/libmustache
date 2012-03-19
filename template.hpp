@@ -18,46 +18,60 @@ class Template {
   public:
     //! Typedefs
     typedef std::auto_ptr<Template> Ptr;
-    typedef std::vector<std::string> Fragments;
-    typedef std::vector<Node> Nodes;
-    typedef std::map<std::string,Template> Partials;
+    typedef std::map<std::string,Template*> Partials;
     
-    //! Constants
-    static const int defaultTemplateSize = 1000;
-    static const int defaultFragmentsSize = 400;
-    static const int defaultNodesSize = 200;
+    //! Enum of states
+    enum State {
+      StateEmpty = 0,
+      StateAssigned = 1,
+      StateTokenized = 2
+    };
+    
+  private:
+    //! The template state
+    Template::State _state;
     
     //! The template string value
-    std::string str;
-    
-    //! The template fragments
-    Template::Fragments fragments;
-    
-    //! The template node list
-    Template::Nodes nodes;
+    const std::string _str;
     
     //! The template root node
-    Node * root;
+    Node _root;
     
     //! The internal template partials
-    Template::Partials partials;
+    Template::Partials _partials;
     
+    //! Internal constructor
+    Template() : 
+        _state(Template::StateEmpty) {};
+    Template(Node node) : 
+        _state(Template::StateTokenized),
+        _root(node) {};
+    
+  public:
     //! Constructor
     Template(const std::string& tmpl) : 
-        str(tmpl),
-        fragments(defaultFragmentsSize), 
-        nodes(defaultNodesSize), 
-        root(NULL) {};
+        _state(Template::StateAssigned),
+        _str(tmpl) {};
     Template(const char * tmpl, int len) : 
-        str(tmpl, len), 
-        fragments(defaultFragmentsSize), 
-        nodes(defaultNodesSize), 
-        root(NULL) {};
+        _state(Template::StateAssigned),
+        _str(tmpl, len) {};
+    
+    //! Destructor
+    ~Template();
+    
+    //! Gets the template state
+    const Template::State getState() {
+      return _state;
+    };
     
     //! Gets the template string
     const std::string& getString() {
-      return str;
+      return _str;
     };
+    
+    //! Tokenizer is a friend
+    friend class Tokenizer;
+    friend class Renderer;
 };
 
 

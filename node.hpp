@@ -68,6 +68,10 @@ class Node {
     
     //! Constructor
     Node() : data(NULL), type(Node::TypeNone), flags(Node::FlagNone), child(NULL) {};
+    Node(Node::Type type, const std::string& data, int flags = 0) :
+        type(type),
+        data(new std::string(data)),
+        flags(flags) {};
     
     //! Destructor
     ~Node();

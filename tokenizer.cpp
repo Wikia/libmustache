@@ -44,9 +44,25 @@ bool Tokenizer::getEscapeByDefault() {
   return _escapeByDefault;
 }
 
-void Tokenizer::tokenize(std::string * tmpl, Node * root)
+//! Tokenizes the given template
+void Tokenizer::tokenize(Template & tmplObj)
 {
-  unsigned int tmplL = tmpl->length();
+  // Check if the template has an invalid state
+  if( tmplObj.getState() != Template::StateAssigned ) {
+    return;
+  }
+  
+  // Get the template string
+  const std::string& tmpl = tmplObj.getString();
+  
+  // Initialize root node
+  tmplObj._root.type = Node::TypeRoot;
+  tmplObj._root.flags = Node::FlagNone;
+  tmplObj._root.data = NULL;
+  
+  // Initialize tokenizer
+  unsigned int tmplL = tmpl.length();
+  const char * chr = tmpl.c_str();
   
   std::string start(_startSequence);
   char startC = start.at(0);
@@ -58,7 +74,6 @@ void Tokenizer::tokenize(std::string * tmpl, Node * root)
   long tmpStopL = stopL;
   
   long pos = 0;
-  const char * chr;
   long skipUntil = -1;
   long lineNo = 1;
   long charNo = 0;
@@ -70,21 +85,14 @@ void Tokenizer::tokenize(std::string * tmpl, Node * root)
   int startLineNo = 0;
   int currentFlags = Node::FlagNone;
   std::string buffer;
-  buffer.reserve(100); // Reserver 100 chars
+  buffer.reserve(100); // Reserve 100 chars
   
-  int depth = 0;
-  Node::Stack nodeStack;
+  // Initialize stack
   Node * node;
-  
-  // Initialize root node and stack[0]
-  root->type = Node::TypeRoot;
-  root->flags = Node::FlagNone;
-  root->data = NULL;
-  
-  nodeStack.push(root);
+  Node::Stack nodeStack;
+  nodeStack.push(&tmplObj._root);
   
   // Scan loop
-  chr = tmpl->c_str();
   for( pos = 0; pos < tmplL; pos++ ) {
     
     // Track line numbers
@@ -107,13 +115,10 @@ void Tokenizer::tokenize(std::string * tmpl, Node * root)
     
     // Main
     if( !inTag ) {
-      if( *chr == startC && tmpl->compare(pos, startL, start) == 0 ) {
+      if( *chr == startC && tmpl.compare(pos, startL, start) == 0 ) {
         // Close previous buffer
         if( buffer.length() > 0 ) {
-          node = new Node();
-          node->type = Node::TypeOutput;
-          node->data = new std::string(buffer);
-          nodeStack.top()->children.push_back(node);
+          nodeStack.top()->children.push_back(new Node(Node::TypeOutput, buffer));
           buffer.clear();
         }
         // Open new buffer
@@ -122,13 +127,13 @@ void Tokenizer::tokenize(std::string * tmpl, Node * root)
         startLineNo = lineNo;
         startCharNo = charNo; // Could be inaccurate
         // Triple mustache
-        if( start.compare("{{") == 0 && tmpl->compare(pos+2, 1, "{") == 0 ) {
+        if( start.compare("{{") == 0 && tmpl.compare(pos+2, 1, "{") == 0 ) {
           inTripleTag = true;
           skipUntil++;
         }
       }
     } else {
-      if( *chr == stopC && tmpl->compare(pos, stopL, stop) == 0 ) {
+      if( *chr == stopC && tmpl.compare(pos, stopL, stop) == 0 ) {
         // Trim buffer
         trim(buffer);
         if( buffer.length() <= 0 ) {
@@ -203,34 +208,30 @@ void Tokenizer::tokenize(std::string * tmpl, Node * root)
             currentFlags = currentFlags | Node::FlagEscape;
           }
           // Create node
-          if( currentFlags & Node::FlagInlinePartial ) { 
-            root->partials.insert(std::make_pair(buffer, mustache::Node()));
-            node = &(root->partials[buffer]);
-            node->type = Node::TypeRoot; // Kind of hackish
-            node->data = new std::string(buffer);
-            node->flags = currentFlags;
+          if( currentFlags & Node::FlagInlinePartial ) {
+            tmplObj._partials.insert(std::make_pair(
+                buffer, 
+                new Template(Node(Node::TypeRoot, buffer, currentFlags))
+            ));
+            nodeStack.top()->children.push_back(&(tmplObj._partials[buffer]->_root));
           } else {
-            node = new Node();
-            node->type = Node::TypeTag;
-            node->data = new std::string(buffer);
-            node->flags = currentFlags;
+            node = new Node(Node::TypeTag, buffer, currentFlags);
             nodeStack.top()->children.push_back(node);
           }
           // Push/pop stack
           if( currentFlags & Node::FlagHasChildren ) {
-            depth++;
             nodeStack.push(node);
           } else if( currentFlags & Node::FlagStop ) {
-            nodeStack.pop();
-            depth--;
-            if( depth < 0 ) {
+            if( nodeStack.size() <= 0 ) {
               std::ostringstream oss;
               oss << "Extra closing section or missing opening section"
                   << " detected after tag starting at "
                   << startLineNo << ":" << startCharNo;
               throw Exception(oss.str());
             }
+            nodeStack.pop();
           }
+          node = NULL;
         }
         // Clear buffer
         buffer.clear();
@@ -239,7 +240,7 @@ void Tokenizer::tokenize(std::string * tmpl, Node * root)
         skipUntil = pos + tmpStopL - 1;
         // Triple mustache
         if( !skip && inTripleTag && stop.compare("}}") == 0 ) {
-          if( tmpl->compare(pos+2, 1, "}") != 0 ) {
+          if( tmpl.compare(pos+2, 1, "}") != 0 ) {
             std::ostringstream oss;
             oss << "Missing closing triple mustache delimiter at "
                 << lineNo << ":" << charNo
@@ -270,30 +271,14 @@ void Tokenizer::tokenize(std::string * tmpl, Node * root)
         << "starting at "
         << startLineNo << ":" << startCharNo;
     throw Exception(oss.str());
-  } else if( depth > 0 ) {
+  } else if( nodeStack.size() > 0 ) {
     std::ostringstream oss;
     oss << "Unclosed section at end of template";
     throw Exception(oss.str());
   } else if( buffer.length() > 0 ) {
-    node = new Node();
-    node->type = Node::TypeOutput;
-    node->data = new std::string(buffer);
-    nodeStack.top()->children.push_back(node);
+    nodeStack.top()->children.push_back(new Node(Node::TypeOutput, buffer));
     buffer.clear();
   }
-}
-
-//! Tokenizes the given template
-void Tokenizer::tokenize(Template & tmpl)
-{
-  // Check if it's not empty or already been tokenized
-  if( tmpl.str.length() <= 0 ) {
-    return;
-  } else if( tmpl.root != NULL ) {
-    return;
-  }
-  
-  
 }
 
 

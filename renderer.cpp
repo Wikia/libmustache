@@ -11,7 +11,7 @@ Renderer::~Renderer()
 
 void Renderer::clear()
 {
-  _node = NULL;
+  _tmpl = NULL;
   _data = NULL;
   if( _stack != NULL ) {
     delete _stack;
@@ -21,10 +21,10 @@ void Renderer::clear()
   _output = NULL;
 }
 
-void Renderer::init(Node * node, Data * data, Node::Partials * partials, std::string * output)
+void Renderer::init(Template * tmpl, Data * data, Node::Partials * partials, std::string * output)
 {
   clear();
-  _node = node;
+  _tmpl = tmpl;
   _data = data;
   if( partials != NULL && partials->size() > 0 ) {
     // Don't add if no partials so we can check if it's null
@@ -33,9 +33,9 @@ void Renderer::init(Node * node, Data * data, Node::Partials * partials, std::st
   _output = output;
 }
 
-void Renderer::setNode(Node * node)
+void Renderer::setTemplate(Template * tmpl)
 {
-  _node = node;
+  _tmpl = tmpl;
 }
 
 void Renderer::setData(Data * data)
@@ -51,8 +51,8 @@ void Renderer::setPartials(Node::Partials * partials)
 void Renderer::render()
 {
   // Check node and data
-  if( _node == NULL ) {
-    throw Exception("Empty tree");
+  if( _tmpl == NULL ) {
+    throw Exception("Empty template");
   } else if( _data == NULL ) {
     throw Exception("Empty data");
   }
@@ -68,7 +68,7 @@ void Renderer::render()
   _stack->push(_data);
   
   // Render
-  _renderNode(_node);
+  _renderNode(&(_tmpl->_root));
   
   // Clear?
   //clear();
@@ -253,12 +253,12 @@ void Renderer::_renderNode(Node * node)
           _renderNode(&(p_it->second));
         }
       }
-      if( !partialFound && _node->partials.size() > 0 ) {
-        Node::Partials::iterator p_it;
-        p_it = _node->partials.find(*(node->data));
-        if( p_it != _node->partials.end() ) {
+      if( !partialFound && _tmpl->_partials.size() > 0 ) {
+        Template::Partials::iterator p_it;
+        p_it = _tmpl->_partials.find(*(node->data));
+        if( p_it != _tmpl->_partials.end() ) {
           partialFound = true;
-          _renderNode(&(p_it->second));
+          _renderNode(&(p_it->second->_root));
         }
       }
       break;
