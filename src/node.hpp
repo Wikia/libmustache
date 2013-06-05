@@ -4,6 +4,7 @@
 
 #include <map>
 #include <memory>
+#include <sstream>
 #include <stack>
 #include <string>
 #include <vector>
@@ -41,8 +42,11 @@ class Node {
       TypePartial = 512,
       TypeInlinePartial = 1024,
       
+      TypeHelper = 2048,
+      TypeBlockHelper = 4096,
+      
       // If the type allows children
-      TypeHasChildren = Node::TypeNegate | Node::TypeSection | Node::TypeInlinePartial,
+      TypeHasChildren = Node::TypeNegate | Node::TypeSection | Node::TypeInlinePartial | Node::TypeBlockHelper,
       
       // If the type pushes data to the stack
       TypeHasData = Node::TypeVariable | Node::TypeNegate | Node::TypeSection | Node::TypePartial,
@@ -66,6 +70,9 @@ class Node {
     //! The flags
     int flags;
     
+    //! The helper name
+    std::string * helper;
+    
     //! The string value
     std::string * data;
     
@@ -84,12 +91,14 @@ class Node {
     //! Constructor
     Node() : 
         type(Node::TypeNone),
+        helper(NULL),
         data(NULL),
         dataParts(NULL),
         flags(Node::FlagNone), 
         child(NULL) {};
     Node(Node::Type type, const std::string& data, int flags = 0) :
         type(type),
+        helper(NULL),
         dataParts(NULL), 
         flags(flags), 
         child(NULL) {
@@ -102,6 +111,8 @@ class Node {
     
     //! Set data
     void setData(const std::string& data);
+    
+    std::string toString();
 };
 
 /*! \class NodeStack

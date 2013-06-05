@@ -162,10 +162,16 @@ void mustache_spec_parse_test(yaml_document_t * document, yaml_node_t * node)
   }
   
   // Execute the test
-  mustache::Mustache mustache;
-  mustache::Node root;
-  mustache.tokenize(&test->tmpl, &root);
-  mustache.render(&root, &test->data, &test->partials, &test->output);
+  try {
+    mustache::Mustache mustache;
+    mustache::Node root;
+    mustache.tokenize(&test->tmpl, &root);
+    mustache.render(&root, &test->data, &test->partials, &test->output);
+  } catch( mustache::Exception e ) {
+    std::cerr << e.what() << "\n";
+  } catch( std::exception e ) {
+    std::cerr << e.what() << "\n";
+  }
   
   // Output result
   test->print();

@@ -150,9 +150,15 @@ void Tokenizer::tokenize(std::string * tmpl, Node * root)
           case '^':
             currentType = Node::TypeNegate;
             break;
-          case '#':
-            currentType = Node::TypeSection;
+          case '#': {
+            size_t pos = buffer.find(" ");
+            if( pos != std::string::npos && pos > 1 ) {
+                currentType = Node::TypeBlockHelper;
+            } else {
+                currentType = Node::TypeSection;
+            }
             break;
+          }
           case '/':
             currentType = Node::TypeStop;
             break;
@@ -212,6 +218,14 @@ void Tokenizer::tokenize(std::string * tmpl, Node * root)
           if( currentType == Node::TypeInlinePartial ) { 
             root->partials.insert(std::make_pair(buffer, mustache::Node(Node::TypeRoot, buffer, currentFlags)));
             node = &(root->partials[buffer]);
+          } else if( currentType == Node::TypeBlockHelper ) {
+            size_t pos = buffer.find(" ");
+            std::string helper = buffer.substr(0, pos);
+            buffer.erase(0, pos);
+            trim(helper);
+            trim(buffer);
+            node = new Node(currentType, buffer, currentFlags);
+            node->helper = new std::string(helper);
           } else {
             node = new Node(currentType, buffer, currentFlags);
             nodeStack.back()->children.push_back(node);
