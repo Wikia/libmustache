@@ -2,4 +2,5 @@
 
 echo running tests
 
-$top_srcdir/test/spec/test_spec $top_srcdir/spec/specs
+$top_srcdir/test/spec/test_spec $top_srcdir/spec/mustache/specs
+# $top_srcdir/test/spec/test_spec $top_srcdir/spec/handlebars/specs

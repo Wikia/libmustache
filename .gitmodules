@@ -1,3 +1,6 @@
-[submodule "spec"]
-	path = spec
+[submodule "spec/mustache"]
+	path = spec/mustache
 	url = git://github.com/jbboehr/mustache-spec.git
+[submodule "spec/handlebars"]
+	path = spec/handlebars
+	url = git://github.com/jbboehr/handlebars-spec.git
