@@ -32,9 +32,9 @@ class Data {
     typedef MUSTACHE_HASH_NAMESPACE::MUSTACHE_HASH_MAP_CLASS<std::string,Data *> Map;
     typedef std::list<Data *> List;
     typedef std::vector<Data *> Array;
-    
+
     //! Enum of the different supported data types
-    enum Type { 
+    enum Type {
       TypeNone = 0,
       TypeString = 1,
       TypeList = 2,
@@ -42,51 +42,59 @@ class Data {
       TypeArray = 4,
       TypeLambda = 5
     };
-    
+
     //! The data type
     Data::Type type;
-    
+
     //! The length of the data (only used for the array type)
     int length;
-    
+
     //! The current string value
     Data::String * val;
-    
+
     //! The current map value
     Data::Map data;
-    
+
     //! The current array value (list)
     Data::List children;
-    
+
     //! The current array value (array)
     Data::Array array;
 
     //! The curent lambda value
     Lambda * lambda;
-    
+
     //! Constructor
-    Data() : 
+    Data() :
         type(Data::TypeNone),
         val(NULL),
         lambda(NULL) {};
     Data(Data::Type type, int size) : val(NULL), lambda(NULL) {
       init(type, size);
     };
-    
+
     //! Destructor
     ~Data();
-    
+
     //! Checks if the node is empty. The includes an empty value.
     int isEmpty();
-    
+
     //! Initialize the data
     void init(Data::Type type, int size);
-    
+
+    void insertPair(std::string k, Data * v);
+    void pushBack(Data * v);
+
     //! Create from json
     static Data * createFromJSON(const char * string);
-    
+
     //! Create from yaml
     static Data * createFromYAML(const char * string);
+
+    //! Create a new data object
+    static Data * factory();
+
+    static void destroy(Data * v);
 };
 
 Data * searchStack(Stack<Data *> * stack, std::string * key);
@@ -98,10 +106,10 @@ Data * searchStackNR(Stack<Data *> * stack, std::string * key);
 
     This class is used to implement stack lookups in the renderer.
 class DataStack : Stack<Data *> {
-    
+
     //! Looks up the stack for a map value
     Data * search(std::string * key);
-    
+
     Data * searchnr(std::string * key);
 };
 */
